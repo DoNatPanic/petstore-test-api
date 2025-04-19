@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Pet(
-    val id: Int? = null,
+    val id: Long? = null,
     val category: Category? = null,
     val name: String? = null,
     val photoUrls: List<String> = emptyList(),

@@ -14,14 +14,14 @@ class PetstoreApiTest {
 
     @Test
     fun `create, get, update and delete pet`() = runBlocking {
-        val tempId = 999 // (1000000..1999999).random() // уникальный ID для изоляции
+        val tempId = 999L // (1000000..1999999).random() // уникальный ID для изоляции
         val tempName = "GoodBoy"
 
         // 1. Создание питомца
         val newPet = Pet(
             id = tempId,
             name = tempName,
-            category = Category(1, "dogs"),
+            category = Category(1L, "dogs"),
             photoUrls = listOf("https://example.com/somedog.jpg"),
             tags = listOf(Tag(1, "test")),
             status = "available"
@@ -45,9 +45,9 @@ class PetstoreApiTest {
         val changedPet = Pet(
             id = tempId,
             name = tempName,
-            category = Category(1, "dogs"),
+            category = Category(1L, "dogs"),
             photoUrls = listOf("https://example.com/updated.jpg"),
-            tags = listOf(Tag(1, "updated")),
+            tags = listOf(Tag(1L, "updated")),
             status = "sold"
         )
 

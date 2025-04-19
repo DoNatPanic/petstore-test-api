@@ -25,7 +25,7 @@ val client = HttpClient(CIO) {
     }
 }
 
-suspend fun getPetById(id: Int): Pet {
+suspend fun getPetById(id: Long): Pet {
     return client.get("$basePetUrl/$id").body()
 }
 
@@ -41,5 +41,5 @@ suspend fun updatePet(pet: Pet): Pet =
         setBody(pet)
     }.body()
 
-suspend fun deletePet(id: Int): HttpResponse =
+suspend fun deletePet(id: Long): HttpResponse =
     client.delete("$basePetUrl/$id")

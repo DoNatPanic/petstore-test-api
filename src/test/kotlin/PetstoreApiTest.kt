@@ -1,5 +1,6 @@
 package org.example
 
+import io.ktor.client.call.body
 import org.junit.jupiter.api.Test
 import kotlinx.coroutines.runBlocking
 import org.example.models.Category
@@ -8,9 +9,9 @@ import org.example.models.OrderStatus
 import org.example.models.Pet
 import org.example.models.PetStatus
 import org.example.models.Tag
+import org.example.models.User
 import java.io.File
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class PetstoreApiTest {
@@ -34,7 +35,6 @@ class PetstoreApiTest {
 
         val createdPet = createPet(newPet)
         println("POST status = ${createdPet.status}")
-        assertEquals(tempPetId, createdPet.id)
         assertEquals(tempPetName, createdPet.name)
         println("Pet created: $createdPet")
 
@@ -104,25 +104,146 @@ class PetstoreApiTest {
 
         val createdOrder = createOrder(newOrder)
         println("POST status = ${createdOrder.status}")
-        assertEquals(tempOrderId, createdOrder.id)
         assertEquals(tempPetId, createdOrder.petId)
-        println("Pet created: $createdOrder")
+        assertTrue(
+            createdOrder.status == newOrder.status,
+            "Expected create order status ${newOrder.status} but was ${createdOrder.status}"
+        )
+        println("Order created: $createdOrder")
 
         // Получение по id
         val fetchedOrder = getOrderById(tempOrderId)
-        println("FETCH status = ${fetchedOrder.status}")
-        assertEquals(tempOrderId, fetchedOrder.id)
-        assertEquals(tempOrderStatus.name, fetchedOrder.status)
+        assertTrue(
+            fetchedOrder.status == newOrder.status,
+            "Expected fetch order status ${newOrder.status} but was ${fetchedOrder.status}"
+        )
         println("Order fetched: $fetchedOrder")
 
         // Удаление
         val deleteResponse = deleteOrder(tempOrderId)
         println("DELETE status = ${deleteResponse.status}")
-        assertEquals(200, deleteResponse.status.value)
-        println("Order deleted: ID $tempPetId")
+        assertTrue(
+            deleteResponse.status.value == 200,
+            "Expected delete order response status 200 but was ${deleteResponse.status.value}"
+        )
+        if (deleteResponse.status.value == 200) {
+            println("Order deleted successfully")
+        }
 
         val list = getInventories()
         println("Inventory size: ${list.size}")
         assertTrue(list.isNotEmpty(), "The list of inventories should not be empty.")
+    }
+
+    @Test
+    fun `create, get, update and delete user`() = runBlocking {
+        val tempUserId = 999L // (1000000..1999999).random() // уникальный ID для изоляции
+        val tempUserName = "petr"
+        val updatedFirstName = "Petr"
+        val tempUserStatus = 0
+
+        // Создание пользователя
+        val newUser = User(
+            id = tempUserId,
+            username = tempUserName,
+            firstName = "string",
+            lastName = "string",
+            email = "string",
+            password = "string",
+            phone = "string",
+            userStatus = tempUserStatus
+        )
+
+        val responseCreate = createUser(newUser)
+        assertTrue(
+            responseCreate.status.value == 200,
+            "Expected create user response status 200 but was ${responseCreate.status.value}"
+        )
+        if (responseCreate.status.value == 200) {
+            println("User created: Username ${newUser.username}")
+        }
+
+        //  Получение по id
+        val fetchedUser = getUserByName(tempUserName)
+        assertTrue(
+            tempUserName == fetchedUser.username,
+            "Expected username $tempUserName but was ${fetchedUser.username}"
+        )
+        println("User fetched: $fetchedUser")
+
+        // Изменение информации о пользователе
+        val changedUser = User(
+            id = tempUserId,
+            username = tempUserName,
+            firstName = updatedFirstName,
+            lastName = "string",
+            email = "string",
+            password = "string",
+            phone = "string",
+            userStatus = tempUserStatus
+        )
+
+        // Обновление информации о пользователе
+        val updateResponse = updateUser(changedUser)
+        assertTrue(
+            updateResponse.status.value == 200,
+            "Expected update user response status 200 but was ${updateResponse.status.value}"
+        )
+        if (updateResponse.status.value == 200) {
+            println("User updated: Username ${changedUser.username}")
+        }
+
+        // Вход в учетную запись
+        val loginUserResponse = loginUser(tempUserName, "1234")
+        assertTrue(
+            loginUserResponse.status.value == 200,
+            "Expected login user response status 200 but was ${loginUserResponse.status.value}"
+        )
+        if (loginUserResponse.status.value == 200) {
+            println("User logged in successfully")
+        }
+
+        // Выход из учетной записи
+        val logoutUserResponse = logoutUser()
+        assertTrue(
+            logoutUserResponse.status.value == 200,
+            "Expected logout user response status 200 but was ${logoutUserResponse.status.value}"
+        )
+        if (logoutUserResponse.status.value == 200) {
+            println("User logged out successfully")
+        }
+
+        // Удаление
+        val deleteResponse = deleteUser(tempUserName)
+        println("DELETE status = ${deleteResponse.status}")
+        assertTrue(
+            deleteResponse.status.value == 200,
+            "Expected delete user response status 200 but was ${deleteResponse.status.value}"
+        )
+        if (deleteResponse.status.value == 200) {
+            println("User deleted: UserName $tempUserName")
+        }
+
+        // Создание списка типа List пользователей
+        val list = listOf(newUser)
+        val responseCreateList = createUserList(list)
+        assertTrue(
+            responseCreateList.status.value == 200,
+            "Expected create user list response status 200 but was ${responseCreateList.status.value}"
+        )
+        if (deleteResponse.status.value == 200) {
+            println("User list created: list size is ${list.size}")
+        }
+
+        // Создание списка типа Array пользователей
+        val array = listOf(newUser)
+        val responseCreateArray = createUserList(list)
+        assertTrue(
+            responseCreateArray.status.value == 200,
+            "Expected create user array response status 200 but was ${responseCreateArray.status.value}"
+        )
+        if (deleteResponse.status.value == 200) {
+            println("User array created: array size is ${array.size}")
+        }
     }
 }

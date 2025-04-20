@@ -15,6 +15,7 @@ import org.example.models.Pet
 import org.example.models.Response
 import io.ktor.client.request.forms.*
 import org.example.models.PetStatus
+import org.example.models.User
 import java.io.File
 
 
@@ -69,9 +70,10 @@ suspend fun updatePet(pet: Pet): Pet =
 
 // GET finds pets by status
 suspend fun getByStatus(status: PetStatus): List<Pet> {
-    return client.get("$basePetUrl/findByStatus"){
+    return client.get("$basePetUrl/findByStatus") {
         parameter("status", status)
-        accept(ContentType.Application.Json)}.body()
+        accept(ContentType.Application.Json)
+    }.body()
 }
 
 // GET find pet by id
@@ -121,3 +123,54 @@ suspend fun deleteOrder(id: Long): HttpResponse =
 
 
 // ***** USER *****
+
+// POST creates list of users with given input array
+suspend fun createUserList(list: List<User>): HttpResponse =
+    client.post("$baseUserUrl/createWithList") {
+        contentType(ContentType.Application.Json)
+        setBody(list)
+    }.body()
+
+
+// GET get user by username
+suspend fun getUserByName(userName: String): User {
+    return client.get("$baseUserUrl/$userName").body()
+}
+
+// PUT updated user
+suspend fun updateUser(user: User): HttpResponse =
+    client.put("$baseUserUrl/${user.username}") {
+        contentType(ContentType.Application.Json)
+        setBody(user)
+    }.body()
+
+// DELETE delete user
+suspend fun deleteUser(userName: String): HttpResponse =
+    client.delete("$baseUserUrl/$userName")
+
+// GET logs user into the system
+suspend fun loginUser(userName: String, password: String): HttpResponse =
+    client.get("$baseUserUrl/login") {
+        parameter("username", userName)
+        parameter("password", password)
+    }
+
+// GET logs out current logged in user session
+suspend fun logoutUser(): HttpResponse =
+    client.get("$baseUserUrl/logout")
+
+// POST creates list of users with given input array
+suspend fun createUserArray(array: Array<User>): HttpResponse =
+    client.post("$baseUserUrl/createWithList") {
+        contentType(ContentType.Application.Json)
+        setBody(array)
+    }.body()
+
+// POST create user
+suspend fun createUser(user: User): HttpResponse {
+    val response = client.post(baseUserUrl) {
+        contentType(ContentType.Application.Json)
+        setBody(user)
+    }
+    return response
+}
